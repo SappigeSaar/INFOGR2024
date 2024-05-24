@@ -6,7 +6,7 @@ Team members: (names and student IDs)
 Tick the boxes below for the implemented features. Add a brief note only if necessary, e.g., if it's only partially working, or how to turn it on.
 
 Formalities:
-[ ] This readme.txt
+[X] This readme.txt
 [ ] Cleaned (no obj/bin folders)
 
 Minimum requirements implemented:
