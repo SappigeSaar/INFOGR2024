@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace INFOGR2024Template
+namespace raytracer
 {
     internal class Sphere
     {
