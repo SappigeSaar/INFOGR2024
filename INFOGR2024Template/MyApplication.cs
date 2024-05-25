@@ -32,7 +32,7 @@ namespace raytracer
         {
             Scene scene = new Scene();
             camera = new Camera(cameraPosition, FOVAngle, cameraLookDirection, cameraUpDirection, cameraRightDirection);
-            raytracer = new Raytracer();
+            raytracer = new Raytracer(scene, camera, screen);
         }
 
         /// <summary>
@@ -43,8 +43,8 @@ namespace raytracer
         public void Tick(KeyboardState keyboard)
         {
             screen.Clear(0);
-
-            this.camera.Update(keyboard);
+            raytracer.Render();
+            camera.Update(keyboard);
             //screen.Print("hello world", 2, 2, 0xffffff);
             //screen.Line(2, 20, 160, 20, 0xff0000);
         }
