@@ -14,7 +14,22 @@ namespace raytracer
 
         public Scene()
         {
+            Light light;
+            light = new Light((5, 6, 6), 20f);
+            lightList.Add(light);
 
+            
+            Sphere sphere1 = new Sphere((0, 0, 0), 1, (0, 0, 0), Primitive.Material.specular);
+            sphereList.Add(sphere1);
+
+            Sphere sphere2 = new Sphere((3, 0, 0), 1, (0, 0, 1), Primitive.Material.diffuse);
+            sphereList.Add(sphere2);
+
+            Sphere sphere3 = new Sphere((-3, 0, 0), 1, (1, 0, 0), Primitive.Material.glossy);
+            sphereList.Add(sphere3);
+
+            Plane plane1 = new Plane((0, 1, 0), (1, 1, 1), Primitive.Material.diffuse);
+            planeList.Add(plane1);
         }
     }
 }
