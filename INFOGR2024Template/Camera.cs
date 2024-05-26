@@ -104,7 +104,7 @@ namespace raytracer
         /// <param name="keyboard">the current keyboardState</param>
         private void ChangeCamerapPosition(KeyboardState keyboard)
         {
-            float moveSpeed = 0.5f;
+            float moveSpeed = 1f;
 
             //move left or right
             if (keyboard[Keys.D])
@@ -132,7 +132,7 @@ namespace raytracer
         /// <param name="keyboard">the current keyboardState</param>
         private void ChangeCameraOrientation(KeyboardState keyboard)
         {
-            float moveSpeed = 5f;
+            float moveSpeed = 1f;
 
             //point up or down
             if (keyboard[Keys.Up])

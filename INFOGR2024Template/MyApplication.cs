@@ -14,7 +14,7 @@ namespace raytracer
         public Raytracer raytracer;
 
         //camera values
-        private Vector3 cameraPosition = (2f, 2f, 2f);
+        private Vector3 cameraPosition = (3f, 2f, 0f);
         private Vector3 cameraLookDirection = (0f,0f,1f); //Z is forward
         private Vector3 cameraUpDirection = (0f, 1f, 0f); //Y is up/down
         private Vector3 cameraRightDirection = (1f, 0f, 0f); //X is left-right
@@ -43,11 +43,7 @@ namespace raytracer
         public void Tick(KeyboardState keyboard)
         {
             screen.Clear(0);
-            //Matrix4 M = Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.0f, 1f, 1000);
-            //GL.LoadMatrix(ref M);
-            //GL.Translate(0, 0, -1);
-            //GL.Rotate(Math.PI * 180 / Math.PI, 0, 0, 0);
-
+            
             raytracer.Render();
             camera.Update(keyboard);
             //screen.Print("hello world", 2, 2, 0xffffff);
