@@ -19,7 +19,7 @@ namespace raytracer
             lightList.Add(light);
 
             
-            Sphere sphere1 = new Sphere((0, 0, 0), 1, (0, 0, 0), Primitive.Material.specular);
+            Sphere sphere1 = new Sphere((0, 0, 0), 1, (1, 1, 1), Primitive.Material.specular);
             sphereList.Add(sphere1);
 
             Sphere sphere2 = new Sphere((3, 0, 0), 1, (0, 0, 1), Primitive.Material.diffuse);

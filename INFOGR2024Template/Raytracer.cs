@@ -70,11 +70,104 @@ namespace raytracer
         /// </summary>
         public void Debug()
         {
+            //draw the scene
+            foreach(Sphere sphere in scene.sphereList)
+            {
+                DrawDebugSphere(sphere);
+            }
+            int xCoor;
+            int yCoor;
+            for (int x = -1; x < 2; x++)
+                for (int y = -1; y <2; y++)
+                {
+                    xCoor = TransformX(camera.position.X) + x;
+                    yCoor = TransformZ(camera.position.Z) + y;
+                    try
+                    {
+                        surface.pixels[xCoor + (surface.height - yCoor) * surface.width] = MixColor((1, 1, 0));
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            surface.Line(TransformX(camera.p0.X), (surface.height - TransformZ(camera.p0.Z)), TransformX(camera.p1.X), (surface.height - TransformZ(camera.p1.Z)), 0xff0000);
+
+            int itemcount = debugPrimaryRays.Count -1;
+            while (itemcount >= 0)
+            {
+                Vector3 startline = debugPrimaryRays[0].Item1;
+                Vector3 endline = debugPrimaryRays[itemcount].Item2;
+
+                int startlinex = TransformX(startline.X);
+                int startliney = screenWidth - TransformZ(startline.Z);
+
+                int endlinex = TransformX(endline.X);   
+                int endliney = screenWidth - TransformZ(endline.Z);
+
+                surface.Line(startlinex, startliney, endlinex, endliney, MixColor((1, 0, 0)));
+            }
+
+            //draw the mirror rays
+            itemcount = debugMirrorRay.Count - 1;
+            while (itemcount >= 0)
+            {
+                Vector3 startline = debugMirrorRay[0].Item1;
+                Vector3 endline = debugMirrorRay[itemcount].Item2;
+
+                int startlinex = TransformX(startline.X);
+                int startliney = screenWidth - TransformZ(startline.Z);
+
+                int endlinex = TransformX(endline.X);
+                int endliney = screenWidth - TransformZ(endline.Z);
+
+                surface.Line(startlinex, startliney, endlinex, endliney, MixColor((0, 0, 1)));
+            }
+
+            //draw the lightRays
+            itemcount = debugLightRay.Count - 1;
+            while (itemcount >= 0)
+            {
+                Vector3 startline = debugLightRay[0].Item1;
+                Vector3 endline = debugLightRay[itemcount].Item2;
+
+                int startlinex = TransformX(startline.X);
+                int startliney = screenWidth - TransformZ(startline.Z);
+
+                int endlinex = TransformX(endline.X);
+                int endliney = screenWidth - TransformZ(endline.Z);
+
+                surface.Line(startlinex, startliney, endlinex, endliney, MixColor((1, 0, 1)));
+            }
 
         }
 
+        public int TransformX(float x)
+        {
+            x = x * (screenWidth / 10.0f);
+            x += screenWidth;
+            int xInt = (int)x;
+            return xInt;
+        }
+
+        public int TransformZ(float z)
+        {
+            float aspectRatio = (float)screenWidth / (float)surface.height;
+            z *= 1 * (surface.height / 10.0f);
+            int zInt = (int)z;
+            return zInt;
+        }
+
         private void DrawDebugSphere(Sphere sphere)
-        { }
+        {
+            for (int i =0; i < 360; i++)
+            {
+                double radians = i * (Math.PI / 180);
+                int x = TransformX((float)(sphere.position.X + sphere.radius * Math.Cos(radians)));
+                int y = TransformX((float)(sphere.position.Y + sphere.radius * Math.Cos(radians)));
+                surface.pixels[x + (surface.height - y) * (surface.width)] = MixColor(sphere.color);
+            }
+        }
 
         #endregion
 
