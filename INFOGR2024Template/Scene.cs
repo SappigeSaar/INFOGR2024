@@ -22,13 +22,13 @@ namespace raytracer
             lightList.Add(light2);
 
             
-            Sphere sphere1 = new Sphere((0, 0, 0), 0.8f, (1, 1, 1), Primitive.Material.specular);
+            Sphere sphere1 = new Sphere((0, 1.5f, 4), 0.8f, (1, 1, 1), Primitive.Material.specular);
             sphereList.Add(sphere1);
 
-            Sphere sphere2 = new Sphere((3, 0, 0), 0.8f, (0, 0, 1), Primitive.Material.diffuse);
+            Sphere sphere2 = new Sphere((3, 1.5f, 4), 0.8f, (0, 0, 1), Primitive.Material.diffuse);
             sphereList.Add(sphere2);
 
-            Sphere sphere3 = new Sphere((6, 0, 0), 0.8f, (1, 0, 0), Primitive.Material.glossy);
+            Sphere sphere3 = new Sphere((6, 1.5f, 4), 0.8f, (1, 0, 0), Primitive.Material.glossy);
             sphereList.Add(sphere3);
 
             Plane plane1 = new Plane((0, 1, 0), (1, 1, 1), Primitive.Material.diffuse);

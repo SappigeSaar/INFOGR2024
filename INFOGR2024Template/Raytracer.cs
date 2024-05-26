@@ -159,7 +159,7 @@ namespace raytracer
         /// <returns></returns>
         public int TransformX(float x)
         {
-            x = x * (float)(screenWidth/ 10.0f);
+            x = x * (float)(screenWidth/ 15.0f);
             x += screenWidth;
             int xInt = (int)x;
             return xInt;
@@ -168,7 +168,7 @@ namespace raytracer
         public int TransformZ(float z)
         {
             float aspectRatio = (float)screenWidth / (float)surface.height;
-            z *= 1 * (surface.height / 10.0f); // aspectRatio;
+            z *= 1 * (surface.height / 15.0f); // aspectRatio;
             int zInt = (int)z;
             return zInt;
         }
@@ -210,7 +210,7 @@ namespace raytracer
             Vector3 debugRay;
 
             //getClosestIntersection (which already checks if the length is positive
-            Intersection intersection = ClosestIntersection(rayOrigin, rayDirection);
+            Intersection intersection = ClosestIntersection(camera.position, rayDirection);
 
             if (intersection != null)
             {
@@ -220,13 +220,13 @@ namespace raytracer
             }
             else
             {
-                debugRay = camera.position + 10f * rayDirection; 
+                debugRay = rayOrigin + 10f * rayDirection; 
             }
             //if this intersection is not null, add it to the list of intersections??
 
             //
-            if (y == 4 && x % 2 == 0)
-                debugPrimaryRays.Add((camera.position, debugRay));
+            if (y == 2 && x % 4 == 0)
+                debugPrimaryRays.Add((rayOrigin, debugRay));
 
             //return this intersection
             return intersection;
@@ -270,7 +270,7 @@ namespace raytracer
 
             float a = (float)(rayDirection.X * rayDirection.X + rayDirection.Y * rayDirection.Y + rayDirection.Z * rayDirection.Z);
             float b = Vector3.Dot( rayDirection *2f , rayOrigin - sphere.position);
-            float c = Vector3.Dot(rayOrigin - sphere.position, rayOrigin - sphere.position);
+            float c = Vector3.Dot(rayOrigin - sphere.position, rayOrigin - sphere.position) - (float)(sphere.radius * sphere.radius);
             float d = (float)(b * b - 4f * a * c);
 
             Intersection intersection = null;
