@@ -10,6 +10,9 @@ namespace raytracer
 
         public Primitive closestPrimitive;
 
+        /// <summary>
+        /// the normal vactor from the primitive at the point of intersection
+        /// </summary>
         public Vector3 normal;
 
         /// <summary>

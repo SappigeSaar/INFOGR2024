@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenTK.Mathematics;
 using OpenTK.Platform.Windows;
+using SixLabors.ImageSharp;
 
 namespace raytracer
 {
@@ -350,12 +351,13 @@ namespace raytracer
         /// </summary>
         /// <param name="length"></param>
         /// <param name="rayOrigin">the origin point of the incomming ray</param>
-        /// <param name="rayNormal">the normalised direction of the incomming ray</param>
+        /// <param name="rayDirection">the normalised direction of the incomming ray</param>
         /// <param name="primitive">the primitive at which the intersection takes place</param>
         /// <returns>the intersectionObject of the given ray</returns>
-        private Intersection MakeNewIntersection(float length, Vector3 rayOrigin, Vector3 rayNormal, Primitive primitive)
+        private Intersection MakeNewIntersection(float length, Vector3 rayOrigin, Vector3 rayDirection, Primitive primitive)
         {
-            Vector3 intersectionCoordinate = rayOrigin + length * rayNormal;
+            rayDirection = Vector3.Normalize(rayDirection);
+            Vector3 intersectionCoordinate = rayOrigin + length * rayDirection;
             Intersection intersection;
 
             if (primitive is Sphere)
@@ -373,6 +375,8 @@ namespace raytracer
             intersection.distance = length;
             return intersection;
         }
+
+       
 
         #endregion
 
@@ -400,7 +404,7 @@ namespace raytracer
             if (intersection.closestPrimitive.material == Primitive.Material.specular)
             {
                 bounceCount++;
-                Vector3 offsetIntersection = intersection.scenePosition + 0.5f * intersection.normal;
+                Vector3 offsetIntersection = intersection.scenePosition + 0.1f * intersection.normal;
 
                 //shoot a ray from this intersection to see if we make an intersection with an other object
                 Vector3 viewRay = Vector3.Normalize(offsetIntersection - previousIntersection);
@@ -424,73 +428,94 @@ namespace raytracer
                     colorvalues = GetColor(x, y, reflectedIntersection, intersection.scenePosition, bounceCount);
 
                 }
-                red += colorvalues.X * 1f;
-                green += colorvalues.Y * 1f;
-                blue += colorvalues.Z * 1f;
+                red += colorvalues.X ;
+                green += colorvalues.Y;
+                blue += colorvalues.Z;
             }
 
+            //color stuff for the non-specular materials
             foreach (Light light in scene.lightList)
             {
                 float lightDistance = Vector3.Distance(intersection.scenePosition, light.position);
-                //vector from the ligtpoint to the intersection
+                //vector from the lightpoint to the intersection
                 Vector3 lightRay = Vector3.Normalize(intersection.scenePosition - light.position);
 
                 bool intersects = false;
                 //check if this lightray does not make any other intersections before comming to the current intersection.
 
                 Intersection otherIntersection = ClosestIntersection(light.position, lightRay);
-                //draw debug line
-                if (intersection.closestPrimitive is Sphere && y == 2 && x % 4 == 0)
-                {
-                    Vector3 debugLine = intersection.scenePosition;
-                    debugLightRay.Add((light.position, debugLine));
-                }
-                    
-                if (otherIntersection != intersection)
-                
-                {
-                    //shadow debug ray??
-                    intersects = true;
-                }
 
                 
-                if (!intersects)
+                
+                //if the intersections are not the same, than there is an obstacle before this light hits the primitive
+                if (otherIntersection != null)
                 {
+                    if (lightDistance >= otherIntersection.distance + 0.0001f && lightDistance <= otherIntersection.distance - 0.0001f)
+                        intersects = true;
+                    //draw debug line
+                    if (otherIntersection.closestPrimitive is Sphere && y % 20 == 0 && x % 20 == 0) //intersection.closestPrimitive is Sphere &&
+                    {
+                        Vector3 debugLine = otherIntersection.scenePosition;
+                        debugLightRay.Add((light.position, debugLine));
+                    }
+                }
+
+                //if there is no obstacle intersection, calculate the color and light normally
+                if (intersects == false)
+                {
+                    int n = 20;
+                    float ks = 0.8f;
                     //mNormal = toLightRay
-                    Vector3 toLightRay = Vector3.Normalize(light.position - intersection.scenePosition);
-                    float dotproduct = Vector3.Dot(toLightRay, intersection.normal);
-                    float diffuse = dotproduct;
-                    //float diffuse = Mat(0, dotproduct);
-
+                    Vector3 toLightRay = Vector3.Normalize(light.position - intersection.scenePosition); //normalise??
                     
                     if (intersection.closestPrimitive.material == Primitive.Material.diffuse)
                     {
                         //just diffuse
-                        red += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * 0.1f))));
-                        green += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * 0.1f))));
-                        blue += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * 0.1f))));
+                        float diffuse = light.intensity * (1.0f / (lightDistance * lightDistance)) * Math.Max(0, Vector3.Dot(intersection.normal, toLightRay));
+                        red   +=  diffuse * primitiveColor.X;
+                        green += diffuse * primitiveColor.Y;
+                        blue  += diffuse * primitiveColor.Z;
                     }
                     if (intersection.closestPrimitive.material == Primitive.Material.glossy)
                     {
-                        //diffuse + glossy
-                        Vector3 r = toLightRay - 2 * dotproduct * intersection.normal;
-                        Vector3 v = previousIntersection - intersection.scenePosition;
-                        dotproduct = Vector3.Dot(v, r);
-                        red += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * dotproduct))));
-                        green += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * dotproduct))));
-                        blue += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * dotproduct))));
+                        //just glossy
+                        Vector3 r = toLightRay - 2f * Vector3.Dot(toLightRay, intersection.normal) * intersection.normal;
+                        Vector3 v = Vector3.Normalize(previousIntersection - intersection.scenePosition);
+
+                        float glossy = light.intensity * (1.0f / (lightDistance * lightDistance)) * (float)Math.Pow(Math.Max(0, Vector3.Dot(v, r)), n);
+
+                        red += glossy * ks;
+                        green += glossy * ks;
+                        blue += glossy * ks;
+
+                    }
+                    if (intersection.closestPrimitive.material == Primitive.Material.diffuseGlossyCombo)
+                    {
+                        //both
+                        
+                        Vector3 r = toLightRay - 2f * Vector3.Dot(toLightRay, intersection.normal) * intersection.normal;
+                        Vector3 v = Vector3.Normalize(previousIntersection - intersection.scenePosition);
+                        
+                        float diffuse = Math.Max(0, Vector3.Dot(intersection.normal, toLightRay));
+                        float glossy = (float) Math.Pow(Math.Max(0, Vector3.Dot(v, r)),n);
+
+                        float combo = light.intensity * (1.0f / (lightDistance * lightDistance)) ;
+
+                        red += combo * (primitiveColor.X * diffuse + ks * glossy);
+                        green += combo * (primitiveColor.Y * diffuse + ks * glossy);
+                        blue += combo * (primitiveColor.Z * diffuse + ks * glossy);
 
                     }
                 }
             }
 
             //add ambient lighting
+            
             if (intersection.closestPrimitive.material == Primitive.Material.specular)
             {
-                //can be moved to the spec function>>
-                red += colorvalues.X * 0.8f;
-                green += colorvalues.Y * 0.8f;
-                blue += colorvalues.Z * 0.8f;
+               // red += colorvalues.X * 0.8f;
+                //green += colorvalues.Y * 0.8f;
+                //blue += colorvalues.Z * 0.8f;
             }
             else
             {

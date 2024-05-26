@@ -14,7 +14,7 @@ namespace raytracer
         /// </summary>
         public Vector3 color;//{ get { return color; } set {color = value} };
 
-        public enum Material { diffuse, glossy, specular};
+        public enum Material { diffuse, glossy, specular, diffuseGlossyCombo};
         public Material material;
 
         public Primitive(Vector3 color, Material material)
