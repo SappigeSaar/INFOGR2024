@@ -308,23 +308,48 @@ namespace raytracer
                 
                 if (!intersects)
                 {
+                    //mNormal = toLightRay
                     Vector3 toLightRay = Vector3.Normalize(light.position - intersection.scenePosition);
-                    //do some glossy/diffuse stuff
+                    float dotproduct = Vector3.Dot(toLightRay, intersection.normal);
+                    float diffuse = dotproduct;
+                    //float diffuse = Mat(0, dotproduct);
+
+                    
                     if (intersection.closestPrimitive.material == Primitive.Material.diffuse)
                     {
-
+                        //just diffuse
+                        red += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * 0.1f))));
+                        green += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * 0.1f))));
+                        blue += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * 0.1f))));
                     }
                     if (intersection.closestPrimitive.material == Primitive.Material.glossy)
                     {
                         //diffuse + glossy
-                    }
-                    //i think those are different things, so... do some different stuff than
-                }
-                
+                        Vector3 r = toLightRay - 2 * dotproduct * intersection.normal;
+                        Vector3 v = previousIntersection - intersection.scenePosition;
+                        dotproduct = Vector3.Dot(v, r);
+                        red += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * dotproduct))));
+                        green += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * dotproduct))));
+                        blue += ((light.intensity * (1.0f / (lightDistance * lightDistance)) * ((diffuse * primitiveColor.X) + (0.8f * dotproduct))));
 
+                    }
+                }
             }
 
-            //
+            //add ambient lighting
+            if (intersection.closestPrimitive.material == Primitive.Material.specular)
+            {
+                //can be moved to the spec function>>
+                red += colorvalues.X * 0.8f;
+                green += colorvalues.Y * 0.8f;
+                blue += colorvalues.Z * 0.8f;
+            }
+            else
+            {
+                red += primitiveColor.X * ambientLight;
+                green += primitiveColor.Y * ambientLight;
+                blue += primitiveColor.Z * ambientLight;
+            }
 
             return new Vector3(red, green, blue);
         }
