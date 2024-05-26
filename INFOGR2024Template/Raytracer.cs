@@ -11,6 +11,10 @@ namespace raytracer
     internal class Raytracer
     {
         public Surface surface;
+
+        /// <summary>
+        /// the size of the raytracer screen
+        /// </summary>
         private int screenWidth;
         List<Intersection> intersections = new List<Intersection>();
 
@@ -47,6 +51,9 @@ namespace raytracer
             //clear everything that has been drawn/calculated previously
             surface.Clear(0);
             intersections.Clear();
+            debugPrimaryRays.Clear();
+            debugMirrorRay.Clear();
+            debugLightRay.Clear();
 
             Intersection currentPixel;
             Vector3 rgbValues;
@@ -60,7 +67,7 @@ namespace raytracer
                         surface.pixels[x + y * surface.width] = MixColor(rgbValues);
                     }
                 }
-
+            Debug();
         }
 
         #region Debug
@@ -106,6 +113,7 @@ namespace raytracer
                 int endliney = screenWidth - TransformZ(endline.Z);
 
                 surface.Line(startlinex, startliney, endlinex, endliney, MixColor((1, 0, 0)));
+                itemcount--;
             }
 
             //draw the mirror rays
@@ -122,6 +130,7 @@ namespace raytracer
                 int endliney = screenWidth - TransformZ(endline.Z);
 
                 surface.Line(startlinex, startliney, endlinex, endliney, MixColor((0, 0, 1)));
+                itemcount--;
             }
 
             //draw the lightRays
@@ -138,13 +147,19 @@ namespace raytracer
                 int endliney = screenWidth - TransformZ(endline.Z);
 
                 surface.Line(startlinex, startliney, endlinex, endliney, MixColor((1, 0, 1)));
+                itemcount--;
             }
 
         }
 
+        /// <summary>
+        /// turns a sceneposition into a screenposition
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
         public int TransformX(float x)
         {
-            x = x * (screenWidth / 10.0f);
+            x = x * (float)(screenWidth/ 10.0f);
             x += screenWidth;
             int xInt = (int)x;
             return xInt;
@@ -153,7 +168,7 @@ namespace raytracer
         public int TransformZ(float z)
         {
             float aspectRatio = (float)screenWidth / (float)surface.height;
-            z *= 1 * (surface.height / 10.0f);
+            z *= 1 * (surface.height / 10.0f); // aspectRatio;
             int zInt = (int)z;
             return zInt;
         }
@@ -164,8 +179,12 @@ namespace raytracer
             {
                 double radians = i * (Math.PI / 180);
                 int x = TransformX((float)(sphere.position.X + sphere.radius * Math.Cos(radians)));
-                int y = TransformX((float)(sphere.position.Y + sphere.radius * Math.Cos(radians)));
-                surface.pixels[x + (surface.height - y) * (surface.width)] = MixColor(sphere.color);
+                int y = TransformX((float)(sphere.position.Z + sphere.radius * Math.Sin(radians)));
+                try
+                {
+                    surface.pixels[x + (surface.height - y) * (surface.width)] = MixColor(sphere.color);
+                }
+                catch { }
             }
         }
 
@@ -181,8 +200,10 @@ namespace raytracer
         /// <returns></returns>
         private Intersection GetPrimaryIntersection(int x, int y)
         {
+            float xCoor = (float)(x / (float)screenWidth);
+            float yCoor = (float) (y / (float)surface.height);
             //translate the pixel coordinates into a point in 3d space on the camera's image plane
-            Vector3 rayOrigin = camera.p0 + (x / screenWidth) * (camera.p1 - camera.p0) + (y / surface.height) * (camera.p2 - camera.p0);
+            Vector3 rayOrigin = camera.p0 + xCoor * (camera.p1 - camera.p0) + yCoor * (camera.p2 - camera.p0);
 
             Vector3 rayDirection = Vector3.Normalize(rayOrigin - camera.position);
 
@@ -198,13 +219,13 @@ namespace raytracer
 
             }
             else
-            { 
-                debugRay = camera.position + 8f * rayDirection; 
+            {
+                debugRay = camera.position + 10f * rayDirection; 
             }
             //if this intersection is not null, add it to the list of intersections??
 
             //
-            if (y == 2 && x % 4 == 0)
+            if (y == 4 && x % 2 == 0)
                 debugPrimaryRays.Add((camera.position, debugRay));
 
             //return this intersection
@@ -225,7 +246,7 @@ namespace raytracer
                 if (currentIntersection != null && currentIntersection.distance <= length)
                 {
                     finalIntersection = currentIntersection;
-                    length = currentIntersection.distance;
+                    length = finalIntersection.distance;
                 }
                 //length is smallest intersection length
             }
@@ -245,12 +266,12 @@ namespace raytracer
         //extrra arg float length??
         private Intersection IntersectSphere(Vector3 rayOrigin, Vector3 rayDirection, Sphere sphere)
         {
-            float currentlength = 0f;
+            float currentlength = float.MaxValue;
 
             float a = (float)(rayDirection.X * rayDirection.X + rayDirection.Y * rayDirection.Y + rayDirection.Z * rayDirection.Z);
-            float b = Vector3.Dot( rayDirection *2 , rayOrigin - sphere.position);
+            float b = Vector3.Dot( rayDirection *2f , rayOrigin - sphere.position);
             float c = Vector3.Dot(rayOrigin - sphere.position, rayOrigin - sphere.position);
-            float d = (b * b - 4 * a * c);
+            float d = (float)(b * b - 4f * a * c);
 
             Intersection intersection = null;
 

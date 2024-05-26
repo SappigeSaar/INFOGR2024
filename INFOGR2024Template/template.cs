@@ -175,7 +175,11 @@ namespace raytracer
         {
             base.OnRenderFrame(e);
             // called once per frame; render
-            if (app != null) app.Tick();
+            if (app != null)
+            {
+                var keyboard = KeyboardState;
+                app.Tick(keyboard); 
+            }
             if (terminated)
             {
                 Close();
