@@ -13,8 +13,13 @@ namespace raytracer
         /// the planes normal vector
         /// </summary>
         public Vector3 normal;
-        public Vector3 uNormal;
-        public Vector3 vNormal;
+
+        //vectors perpendicular to the normal and to each other
+        //only used for the pattern
+        private Vector3 uNormal;
+        private Vector3 vNormal;
+
+        public Vector3 pointZero;
 
         /// <summary>
         /// the contrast color for the checkerboard that makes up the plane
@@ -22,15 +27,25 @@ namespace raytracer
         public Vector3 contrastColor;
 
 
-        public Plane(Vector3 norm, Vector3 color, Material material) : base(color, material)
+        public Plane(Vector3 norm, Vector3 point, Vector3 color, Material material) : base(color, material)
         {
-            this.normal = norm;
-            this.uNormal = Vector3.Cross(normal, (1, 0, 0));
+            this.normal = Vector3.Normalize(norm);
+
+            //set the uNormal and the vNormal
+            this.uNormal = Vector3.Cross(normal, (normal.Z, normal.X, normal.Y));
             uNormal.Normalize();
             this.vNormal = Vector3.Cross(normal, uNormal);
+            vNormal.Normalize();
+
+            this.uNormal = Vector3.Cross(normal, vNormal);
             uNormal.Normalize();
 
+
+            this.pointZero = point;
+
             contrastColor = new Vector3(1, 1, 1) - color;
+
+            
         }
 
         /// <summary>

@@ -333,9 +333,11 @@ namespace raytracer
         /// <returns>either null of the closest intersection</returns>
         private Intersection IntersectPlane(Vector3 rayOrigin, Vector3 rayDirection, Plane plane)
         {
-            float a = Vector3.Dot(2 * rayDirection, plane.normal);
-            float b = Vector3.Dot(2 * rayOrigin, plane.normal);
-            float length = (-b / a) / 2;
+            float d = Vector3.Dot(plane.pointZero, plane.normal);
+            float a = Vector3.Dot(rayOrigin, plane.normal);
+            float b = Vector3.Dot(rayDirection, plane.normal);
+
+            float length = (d - a) / b;
 
             Intersection intersection = null;
 

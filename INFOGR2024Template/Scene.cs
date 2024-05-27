@@ -49,8 +49,13 @@ namespace raytracer
             Sphere sphere5 = new Sphere((6, 4, 7), 0.8f, (1, 1, 1), Primitive.Material.specular);
             sphereList.Add((sphere5));
                 
-            Plane plane1 = new Plane(Vector3.Normalize((0, 1, 0)), (1, 1, 1), Primitive.Material.diffuse);
+            Plane plane1 = new Plane(Vector3.Normalize((0, 1, 0)), (1, 0, 1),(1, 1, 1), Primitive.Material.diffuse);
             planeList.Add(plane1);
+
+            Plane plane2 = new Plane((1, 1, 0), (-5, 0, 0), (0, 0.1f, 0.5f), Primitive.Material.diffuseGlossyCombo);
+            plane2.contrastColor = (1, 1, 1);
+            planeList.Add(plane2);
+
         }
     }
 }
