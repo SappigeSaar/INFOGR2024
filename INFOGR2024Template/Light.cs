@@ -1,20 +1,23 @@
 ﻿using OpenTK.Mathematics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace raytracer
 {
     internal class Light
     {
-        public Vector3 position;
+        /// <summary>
+        /// the scenePosition of the light in the scene
+        /// </summary>
+        public Vector3 scenePosition;
+
+        /// <summary>
+        /// the intensity of the light
+        /// </summary>
         public float intensity;
 
         public Light(Vector3 position, float intensity)
         {
-            this.position = position;
+            this.scenePosition = position;
             this.intensity = intensity;
         }   
     }

@@ -11,7 +11,7 @@ namespace raytracer
     internal class Camera
     {
         /// <summary>
-        /// camera position
+        /// camera scenePosition
         /// </summary>
         public Vector3 position;
 
@@ -69,9 +69,9 @@ namespace raytracer
         }
 
         /// <summary>
-        /// updates the camera's position and direction based on the keyboardState
+        /// updates the camera's scenePosition and direction based on the keyboardState
         /// </summary>
-        /// <param name="keyboard">takes the keyboardState to update the camera's position</param>
+        /// <param name="keyboard">takes the keyboardState to update the camera's scenePosition</param>
         public void Update(KeyboardState keyboard)
         {
             ChangeCameraOrientation(keyboard);
@@ -80,7 +80,7 @@ namespace raytracer
             SetCenterAndCorners(FOV);
         }
 
-        //does it need to be 1 at the start??
+        
         /// <summary>
         /// sets the values for the image plane based on the current directions
         /// </summary>

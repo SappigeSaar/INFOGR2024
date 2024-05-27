@@ -5,9 +5,14 @@ namespace raytracer
 {
     internal class Intersection
     {
+        /// <summary>
+        /// the intersection's scenePosition in the scene
+        /// </summary>
         public Vector3 scenePosition;
-        public Vector2 screenPosition;
 
+        /// <summary>
+        /// the primitive ath which this intersection takes place
+        /// </summary>
         public Primitive closestPrimitive;
 
         /// <summary>

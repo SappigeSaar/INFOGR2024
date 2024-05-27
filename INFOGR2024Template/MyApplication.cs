@@ -27,7 +27,9 @@ namespace raytracer
             Init();
         }
 
-        // initialize
+        /// <summary>
+        /// initialize the application by creating the scene, camera and raytracer with the determined values
+        /// </summary>
         public void Init()
         {
             Scene scene = new Scene();
@@ -39,15 +41,15 @@ namespace raytracer
         /// tick: renders one frame
         /// render the raytracer and update the camera
         /// </summary>
-        /// <param name="keyboard"></param>
+        /// <param name="keyboard">the current keyboardstate passed from the template</param>
         public void Tick(KeyboardState keyboard)
         {
+            //clear the screen
             screen.Clear(0);
-            
-            raytracer.Render();
+
             camera.Update(keyboard);
-            //screen.Print("hello world", 2, 2, 0xffffff);
-            //screen.Line(2, 20, 160, 20, 0xff0000);
+            raytracer.Update();
+            
         }
     }
 }

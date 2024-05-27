@@ -12,9 +12,17 @@ namespace raytracer
         /// <summary>
         /// RGB values of max 1, min 0;
         /// </summary>
-        public Vector3 color;//{ get { return color; } set {color = value} };
+        public Vector3 color;
 
+        /// <summary>
+        /// all the possinle materials a primitive can be
+        /// </summary>
         public enum Material { diffuse, glossy, specular, diffuseGlossyCombo};
+       
+        /// <summary>
+        /// the material this primitive is made out of
+        /// choice between diffuse, glossy, specular, or a combination of diffuse and glossy
+        /// </summary>
         public Material material;
 
         public Primitive(Vector3 color, Material material)

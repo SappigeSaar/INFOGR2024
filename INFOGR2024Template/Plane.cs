@@ -9,10 +9,16 @@ namespace raytracer
 {
     internal class Plane : Primitive
     {
+        /// <summary>
+        /// the planes normal vector
+        /// </summary>
         public Vector3 normal;
         public Vector3 uNormal;
         public Vector3 vNormal;
 
+        /// <summary>
+        /// the contrast color for the checkerboard that makes up the plane
+        /// </summary>
         public Vector3 contrastColor;
 
 
@@ -27,6 +33,11 @@ namespace raytracer
             contrastColor = new Vector3(1, 1, 1) - color;
         }
 
+        /// <summary>
+        /// returns the correct color for the given intersection, to create the checkerboard pattern
+        /// </summary>
+        /// <param name="intersectionPoint">the intersection for which we want to color</param>
+        /// <returns>one of the two colors</returns>
         public override Vector3 GiveColor(Vector3 intersectionPoint)
         {
             float u = Vector3.Dot(uNormal, intersectionPoint);

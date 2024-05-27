@@ -9,8 +9,19 @@ namespace raytracer
 {
     internal class Scene
     {
+        /// <summary>
+        /// the list with all the spheres
+        /// </summary>
         public List<Sphere> sphereList = new List<Sphere>();
+
+        /// <summary>
+        /// the list with all the lights
+        /// </summary>
         public List<Light> lightList = new List<Light>();
+
+        /// <summary>
+        /// the list with all the planes
+        /// </summary>
         public List<Plane> planeList = new List<Plane>();
 
         public Scene()
@@ -34,6 +45,9 @@ namespace raytracer
 
             Sphere sphere4 = new Sphere((3, 3, 7), 2f, (1, 1, 1), Primitive.Material.specular);
             sphereList.Add(sphere4);
+
+            Sphere sphere5 = new Sphere((6, 4, 7), 0.8f, (1, 1, 1), Primitive.Material.specular);
+            sphereList.Add((sphere5));
                 
             Plane plane1 = new Plane(Vector3.Normalize((0, 1, 0)), (1, 1, 1), Primitive.Material.diffuse);
             planeList.Add(plane1);

@@ -17,8 +17,9 @@ namespace raytracer
         /// the size of the raytracer screen
         /// </summary>
         private int screenWidth;
-        List<Intersection> intersections = new List<Intersection>();
 
+        
+        //the lists for all the debug ray's
         List<(Vector3, Vector3)> debugPrimaryRays = new List<(Vector3, Vector3)>(); 
         List<(Vector3, Vector3)> debugLightRay = new List<(Vector3, Vector3)> ();
         List<(Vector3, Vector3)> debugMirrorRay = new List<(Vector3, Vector3)>();
@@ -36,7 +37,7 @@ namespace raytracer
         }
 
         /// <summary>
-        /// updates the raytracer
+        /// updates the raytracer by calling render and debug
         /// </summary>
         public void Update()
         {
@@ -51,11 +52,8 @@ namespace raytracer
         {
             //clear everything that has been drawn/calculated previously
             surface.Clear(0);
-            intersections.Clear();
-            debugPrimaryRays.Clear();
-            debugMirrorRay.Clear();
-            debugLightRay.Clear();
-
+            
+            //get all the primary intersections and calculate their color
             Intersection currentPixel;
             Vector3 rgbValues;
             for(int x = 0; x < screenWidth; x++)
@@ -68,7 +66,7 @@ namespace raytracer
                         surface.pixels[x + y * surface.width] = MixColor(rgbValues);
                     }
                 }
-            Debug();
+            
         }
 
         #region Debug
@@ -78,8 +76,9 @@ namespace raytracer
         /// </summary>
         public void Debug()
         {
+
             //draw the scene
-            foreach(Sphere sphere in scene.sphereList)
+            foreach (Sphere sphere in scene.sphereList)
             {
                 DrawDebugSphere(sphere);
             }
@@ -101,6 +100,7 @@ namespace raytracer
                 }
             surface.Line(TransformX(camera.p0.X), (surface.height - TransformZ(camera.p0.Z)), TransformX(camera.p1.X), (surface.height - TransformZ(camera.p1.Z)), 0xff0000);
 
+            //draw the primary rays
             int itemcount = debugPrimaryRays.Count -1;
             while (itemcount >= 0)
             {
@@ -151,6 +151,9 @@ namespace raytracer
                 itemcount--;
             }
 
+            debugPrimaryRays.Clear();
+            debugMirrorRay.Clear();
+            debugLightRay.Clear();
         }
 
         /// <summary>
@@ -179,8 +182,8 @@ namespace raytracer
             for (int i =0; i < 360; i++)
             {
                 double radians = i * (Math.PI / 180);
-                int x = TransformX((float)(sphere.position.X + sphere.radius * Math.Cos(radians)));
-                int y = TransformX((float)(sphere.position.Z + sphere.radius * Math.Sin(radians)));
+                int x = TransformX((float)(sphere.scenePosition.X + sphere.radius * Math.Cos(radians)));
+                int y = TransformX((float)(sphere.scenePosition.Z + sphere.radius * Math.Sin(radians)));
                 try
                 {
                     surface.pixels[x + (surface.height - y) * (surface.width)] = MixColor(sphere.color);
@@ -203,33 +206,29 @@ namespace raytracer
         {
             float xCoor = (float)(x / (float)screenWidth);
             float yCoor = (float) (y / (float)surface.height);
+
             //translate the pixel coordinates into a point in 3d space on the camera's image plane
             Vector3 rayOrigin = camera.p0 + xCoor * (camera.p1 - camera.p0) + yCoor * (camera.p2 - camera.p0);
 
             Vector3 rayDirection = Vector3.Normalize(rayOrigin - camera.position);
 
-            Vector3 debugRay;
+            
 
-            //getClosestIntersection (which already checks if the length is positive
+            //get the closest intersection (which only returns if the length is positive)
             Intersection intersection = ClosestIntersection(camera.position, rayDirection);
 
+            Vector3 debugRay;
+            //set the debug line
             if (intersection != null)
-            {
-                //draw the debug line
                 debugRay = intersection.scenePosition;
-
-            }
             else
-            {
                 debugRay = rayOrigin + 10f * rayDirection; 
-            }
-            //if this intersection is not null, add it to the list of intersections??
-
-            //
-            if (yCoor == 2 && xCoor % 2 == 0)
+            
+            //draw the debug rays
+            if (yCoor % 4 == 0 && xCoor % 4 == 0)
                 debugPrimaryRays.Add((rayOrigin, debugRay));
 
-            //return this intersection
+            //return this intersection//which might be null if there is nothing to intersect
             return intersection;
         }
 
@@ -237,9 +236,9 @@ namespace raytracer
         /// calculates the closest intersection for the given ray
         /// returns null if there is no intersection
         /// </summary>
-        /// <param name="rayOrigin"></param>
-        /// <param name="rayDirection"></param>
-        /// <returns></returns>
+        /// <param name="rayOrigin">the origin point of the ray</param>
+        /// <param name="rayDirection">the normalised direction of the ray</param>
+        /// <returns>the closest intersection in a positive direction, null if there is no intersection</returns>
         private Intersection ClosestIntersection(Vector3 rayOrigin, Vector3 rayDirection)
         {
             float length = float.MaxValue;
@@ -247,7 +246,7 @@ namespace raytracer
             Intersection finalIntersection = null;
 
             //check if the ray intersects with a sphere
-            ////and set the finalIntersectio to the closest sphere
+            //and set the finalIntersection to the closest sphere
             foreach(Sphere sphere in scene.sphereList)
             {
                 Intersection currentIntersection = IntersectSphere(rayOrigin, rayDirection, sphere);
@@ -259,6 +258,7 @@ namespace raytracer
                 //length is smallest intersection length
             }
 
+            //check if there is a plane witha closer intersection
             foreach (Plane plane in scene.planeList)
             {
                 Intersection currentIntersection = IntersectPlane(rayOrigin, rayDirection, plane);
@@ -268,6 +268,8 @@ namespace raytracer
                     length = finalIntersection.distance;
                 }
             }
+
+            //return the finalintersection, which is null if there was no intersection
             return finalIntersection;
         }
 
@@ -285,12 +287,13 @@ namespace raytracer
             float currentlength = float.MaxValue;
 
             float a = (float)(rayDirection.X * rayDirection.X + rayDirection.Y * rayDirection.Y + rayDirection.Z * rayDirection.Z);
-            float b = Vector3.Dot( rayDirection *2f , rayOrigin - sphere.position);
-            float c = Vector3.Dot(rayOrigin - sphere.position, rayOrigin - sphere.position) - (float)(sphere.radius * sphere.radius);
+            float b = Vector3.Dot( rayDirection *2f , rayOrigin - sphere.scenePosition);
+            float c = Vector3.Dot(rayOrigin - sphere.scenePosition, rayOrigin - sphere.scenePosition) - (float)(sphere.radius * sphere.radius);
             float d = (float)(b * b - 4f * a * c);
 
             Intersection intersection = null;
 
+            //if d is positive, there has been an intersection
             if (d>= 0)
             {
                 //if there are two intersections, set the length to the closest intersection
@@ -304,11 +307,12 @@ namespace raytracer
                     else
                         currentlength = l2;
                 }
+
                 //if there is one intersection, take that length
                 else if (d ==0)
                     currentlength = (float)(-b / (2*a));
 
-                //make sure the lengtyh is not negative, so we only "see" things that are in the direction of the ray
+                //make sure the length is not negative, so we only "see" things that are in the direction of the ray
                 if (currentlength >= 0)
                 {
                     intersection = MakeNewIntersection(currentlength, rayOrigin, rayDirection, sphere);
@@ -335,9 +339,7 @@ namespace raytracer
 
             Intersection intersection = null;
 
-            //make sure the lengtyh is not negative, so we only "see" things that are in the direction of the ray
-            //and make sure the length is not larger than 40 so we 
-            //&& length<40
+            //make sure the length is not negative, so we only "see" things that are in the direction of the ray
             if (length>0 )
             {
                 intersection = MakeNewIntersection(length, rayOrigin, rayDirection, plane);
@@ -349,7 +351,7 @@ namespace raytracer
         /// <summary>
         /// makes a new intersection object
         /// </summary>
-        /// <param name="length"></param>
+        /// <param name="length">how far th intersection is from its origin point</param>
         /// <param name="rayOrigin">the origin point of the incomming ray</param>
         /// <param name="rayDirection">the normalised direction of the incomming ray</param>
         /// <param name="primitive">the primitive at which the intersection takes place</param>
@@ -360,10 +362,11 @@ namespace raytracer
             Vector3 intersectionCoordinate = rayOrigin + length * rayDirection;
             Intersection intersection;
 
+            //see what kind of primitive this is
             if (primitive is Sphere)
             {
                 Sphere sphere = (Sphere)primitive;
-                Vector3 normal = Vector3.Normalize(intersectionCoordinate - sphere.position); /// sphere.radius;
+                Vector3 normal = Vector3.Normalize(intersectionCoordinate - sphere.scenePosition); 
                 intersection = new Intersection(intersectionCoordinate, sphere, normal);
             }
             else
@@ -372,7 +375,10 @@ namespace raytracer
                 Vector3 normal = plane.normal;
                 intersection = new Intersection(intersectionCoordinate, plane, normal);
             }
+
+            //set the intrsection distance
             intersection.distance = length;
+
             return intersection;
         }
 
@@ -400,7 +406,7 @@ namespace raytracer
             float green = 0f;
             float blue = 0f;
 
-            //specular stuff is regardless of light hitting it or not)
+            //calculate the specular stuff, which is regardless of light hitting it or not)
             if (intersection.closestPrimitive.material == Primitive.Material.specular)
             {
                 bounceCount++;
@@ -416,12 +422,14 @@ namespace raytracer
                 if (reflectedIntersection == null)
                     return (0, 0, 0);
 
+                //set the debug rays
                 if (y % 10 == 0 && x % 10 == 0)
                 {
                     //Vector3 debugLine = intersection.scenePosition;
                     debugMirrorRay.Add((offsetIntersection, reflectedIntersection.scenePosition));
 
                 }
+
                 //and go into recursion for the color of this new intersection
                 if (bounceCount < 5)
                 {
@@ -436,27 +444,28 @@ namespace raytracer
             //color stuff for the non-specular materials
             foreach (Light light in scene.lightList)
             {
-                float lightDistance = Vector3.Distance(intersection.scenePosition, light.position);
+                float lightDistance = Vector3.Distance(intersection.scenePosition, light.scenePosition);
                 //vector from the lightpoint to the intersection
-                Vector3 lightRay = Vector3.Normalize(intersection.scenePosition - light.position);
+                Vector3 lightRay = Vector3.Normalize(intersection.scenePosition - light.scenePosition);
 
                 bool intersects = false;
                 //check if this lightray does not make any other intersections before comming to the current intersection.
-
-                Intersection otherIntersection = ClosestIntersection(light.position, lightRay);
+                Intersection otherIntersection = ClosestIntersection(light.scenePosition, lightRay);
 
                 
-                
-                //if the intersections are not the same, than there is an obstacle before this light hits the primitive
+                //if the intersections are not the same, then there is an obstacle before this light hits the primitive
                 if (otherIntersection != null)
                 {
+                    //the program might get a slightly different position, while still landing on the same primitive,
+                    //so we check if the intersection falls within a set margin
                     if (lightDistance >= otherIntersection.distance + 0.0001f && lightDistance <= otherIntersection.distance - 0.0001f)
                         intersects = true;
+
                     //draw debug line
                     if (otherIntersection.closestPrimitive is Sphere && y % 20 == 0 && x % 20 == 0) //intersection.closestPrimitive is Sphere &&
                     {
                         Vector3 debugLine = otherIntersection.scenePosition;
-                        debugLightRay.Add((light.position, debugLine));
+                        debugLightRay.Add((light.scenePosition, debugLine));
                     }
                 }
 
@@ -465,12 +474,12 @@ namespace raytracer
                 {
                     int n = 20;
                     float ks = 0.8f;
-                    //mNormal = toLightRay
-                    Vector3 toLightRay = Vector3.Normalize(light.position - intersection.scenePosition); //normalise??
                     
+                    Vector3 toLightRay = Vector3.Normalize(light.scenePosition - intersection.scenePosition); 
+                    
+                    //calculate the colors based on the material
                     if (intersection.closestPrimitive.material == Primitive.Material.diffuse)
                     {
-                        //just diffuse
                         float diffuse = light.intensity * (1.0f / (lightDistance * lightDistance)) * Math.Max(0, Vector3.Dot(intersection.normal, toLightRay));
                         red   +=  diffuse * primitiveColor.X;
                         green += diffuse * primitiveColor.Y;
@@ -478,7 +487,6 @@ namespace raytracer
                     }
                     if (intersection.closestPrimitive.material == Primitive.Material.glossy)
                     {
-                        //just glossy
                         Vector3 r = toLightRay - 2f * Vector3.Dot(toLightRay, intersection.normal) * intersection.normal;
                         Vector3 v = Vector3.Normalize(previousIntersection - intersection.scenePosition);
 
@@ -491,7 +499,6 @@ namespace raytracer
                     }
                     if (intersection.closestPrimitive.material == Primitive.Material.diffuseGlossyCombo)
                     {
-                        //both
                         
                         Vector3 r = toLightRay - 2f * Vector3.Dot(toLightRay, intersection.normal) * intersection.normal;
                         Vector3 v = Vector3.Normalize(previousIntersection - intersection.scenePosition);
@@ -510,14 +517,8 @@ namespace raytracer
             }
 
             //add ambient lighting
+            if (intersection.closestPrimitive.material != Primitive.Material.specular)
             
-            if (intersection.closestPrimitive.material == Primitive.Material.specular)
-            {
-               // red += colorvalues.X * 0.8f;
-                //green += colorvalues.Y * 0.8f;
-                //blue += colorvalues.Z * 0.8f;
-            }
-            else
             {
                 red += primitiveColor.X * ambientLight;
                 green += primitiveColor.Y * ambientLight;
@@ -528,10 +529,11 @@ namespace raytracer
         }
 
         /// <summary>
-        /// mixes the rgb values into a single int, which the screen knows how to dispplay
+        /// mixes the rgb values into a single int, which the screen knows how to display
+        /// makes sure there is no overload fro the values
         /// </summary>
-        /// <param name="rgb"></param>
-        /// <returns></returns>
+        /// <param name="rgb">the separate red green blue values</param>
+        /// <returns>a single int representing the color</returns>
         private int MixColor(Vector3 rgb)
         {
             int red = (int)(rgb.X * 255);
@@ -551,11 +553,7 @@ namespace raytracer
             else if (blue < 0)
                 blue = 0;
 
-
             return (red << 16) + (green <<8) + blue;
         }
-
-
-
     }
 }
