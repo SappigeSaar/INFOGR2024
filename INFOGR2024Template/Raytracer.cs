@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 using OpenTK.Mathematics;
 using OpenTK.Platform.Windows;
 using SixLabors.ImageSharp;
@@ -82,13 +83,20 @@ namespace raytracer
             {
                 DrawDebugSphere(sphere);
             }
+            //draw more scene
+            foreach (Triangle triang in scene.triangleList) {
+
+                surface.Line(TransformX(triang.point1.X), (surface.height - TransformZ(triang.point1.Z)),TransformX(triang.point2.X), (surface.height - TransformZ(triang.point2.Z)), MixColor(triang.color));
+                surface.Line(TransformX(triang.point3.X), (surface.height - TransformZ(triang.point3.Z)),TransformX(triang.point2.X), (surface.height - TransformZ(triang.point2.Z)), MixColor(triang.color));
+                surface.Line(TransformX(triang.point1.X), (surface.height - TransformZ(triang.point1.Z)),TransformX(triang.point3.X), (surface.height - TransformZ(triang.point3.Z)), MixColor(triang.color));
+
+                //draw a point
+            }
+
             int xCoor;
             int yCoor;
-            for (int x = -1; x < 2; x++)
-                for (int y = -1; y <2; y++)
-                {
-                    xCoor = TransformX(camera.position.X) + x;
-                    yCoor = TransformZ(camera.position.Z) + y;
+                    xCoor = TransformX(camera.position.X) ;
+                    yCoor = TransformZ(camera.position.Z) ;
                     try
                     {
                         surface.pixels[xCoor + (surface.height - yCoor) * surface.width] = MixColor((1, 1, 0));
@@ -97,10 +105,10 @@ namespace raytracer
                     {
 
                     }
-                }
+            //dit is de rode horizontale lijn
             surface.Line(TransformX(camera.p0.X), (surface.height - TransformZ(camera.p0.Z)), TransformX(camera.p1.X), (surface.height - TransformZ(camera.p1.Z)), 0xff0000);
 
-            //draw the primary rays
+            //draw the camera rays
             int itemcount = debugPrimaryRays.Count -1;
             while (itemcount >= 0)
             {
@@ -108,11 +116,11 @@ namespace raytracer
                 Vector3 endline = debugPrimaryRays[itemcount].Item2;
 
                 int startlinex = TransformX(startline.X);
-                int startliney = screenWidth - TransformZ(startline.Z);
+                int startliney = surface.height- TransformZ(startline.Z);
 
                 int endlinex = TransformX(endline.X);   
-                int endliney = screenWidth - TransformZ(endline.Z);
-
+                int endliney = surface.height - TransformZ(endline.Z);
+                //surface draws the 2 planes in red
                 surface.Line(startlinex, startliney, endlinex, endliney, MixColor((1, 0, 0)));
                 itemcount--;
             }
@@ -121,33 +129,35 @@ namespace raytracer
             itemcount = debugMirrorRay.Count - 1;
             while (itemcount >= 0)
             {
-                Vector3 startline = debugMirrorRay[0].Item1;
+                Vector3 startline = debugMirrorRay[itemcount].Item1;
                 Vector3 endline = debugMirrorRay[itemcount].Item2;
 
                 int startlinex = TransformX(startline.X);
-                int startliney = screenWidth - TransformZ(startline.Z);
+                int startliney = surface.height - TransformZ(startline.Z);
 
                 int endlinex = TransformX(endline.X);
-                int endliney = screenWidth - TransformZ(endline.Z);
-
+                int endliney = surface.height - TransformZ(endline.Z);
+                //draws the blue lines? but on the wrong side
+               // Console.WriteLine($"{startlinex}|{startliney}|{endlinex}|{endliney}");
                 surface.Line(startlinex, startliney, endlinex, endliney, MixColor((0, 0, 1)));
                 itemcount--;
             }
 
             //draw the lightRays
+            //TODO only show the onest hat hit a circle
             itemcount = debugLightRay.Count - 1;
             while (itemcount >= 0)
             {
-                Vector3 startline = debugLightRay[0].Item1;
+                Vector3 startline = debugLightRay[itemcount].Item1;
                 Vector3 endline = debugLightRay[itemcount].Item2;
 
                 int startlinex = TransformX(startline.X);
-                int startliney = screenWidth - TransformZ(startline.Z);
+                int startliney = surface.height - TransformZ(startline.Z);
 
                 int endlinex = TransformX(endline.X);
-                int endliney = screenWidth - TransformZ(endline.Z);
-
-                surface.Line(startlinex, startliney, endlinex, endliney, MixColor((1, 0, 1)));
+                int endliney = surface.height - TransformZ(endline.Z);
+                //draws the purple rays
+                surface.Line(startlinex, startliney, endlinex, endliney, MixColor((1, 1, 0)));
                 itemcount--;
             }
 
@@ -183,7 +193,7 @@ namespace raytracer
             {
                 double radians = i * (Math.PI / 180);
                 int x = TransformX((float)(sphere.scenePosition.X + sphere.radius * Math.Cos(radians)));
-                int y = TransformX((float)(sphere.scenePosition.Z + sphere.radius * Math.Sin(radians)));
+                int y = TransformZ((float)(sphere.scenePosition.Z + sphere.radius * Math.Sin(radians)));
                 try
                 {
                     surface.pixels[x + (surface.height - y) * (surface.width)] = MixColor(sphere.color);
@@ -222,12 +232,14 @@ namespace raytracer
             if (intersection != null)
                 debugRay = intersection.scenePosition;
             else
-                debugRay = rayOrigin + 10f * rayDirection; 
-            
-            //draw the debug rays
-            if (yCoor % 4 == 0 && xCoor % 4 == 0)
-                debugPrimaryRays.Add((rayOrigin, debugRay));
+                debugRay = rayOrigin + 10f * rayDirection;
 
+            //draw the debug rays
+            //                if (yCoor % 10 == 0)//&& xCoor % 100 == 0)
+            if (y==surface.height/2&&x%4==0)
+            {
+                    debugPrimaryRays.Add((camera.position, debugRay));
+            }
             //return this intersection//which might be null if there is nothing to intersect
             return intersection;
         }
@@ -465,7 +477,7 @@ namespace raytracer
                     return (0, 0, 0);
 
                 //set the debug rays
-                if (y % 10 == 0 && x % 10 == 0)
+                if (y==surface.height/2 )
                 {
                     //Vector3 debugLine = intersection.scenePosition;
                     debugMirrorRay.Add((offsetIntersection, reflectedIntersection.scenePosition));
@@ -504,7 +516,7 @@ namespace raytracer
                         intersects = true;
 
                     //draw debug line
-                    if (otherIntersection.closestPrimitive is Sphere && y % 20 == 0 && x % 20 == 0) //intersection.closestPrimitive is Sphere &&
+                    if (otherIntersection.closestPrimitive is Sphere && y==surface.height/2&& x % 4 == 0) //intersection.closestPrimitive is Sphere &&
                     {
                         Vector3 debugLine = otherIntersection.scenePosition;
                         debugLightRay.Add((light.scenePosition, debugLine));
