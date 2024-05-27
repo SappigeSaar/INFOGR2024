@@ -20,7 +20,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 // tutorial. After the tutorial you can throw away this template code, or modify it at
 // will, or maybe it simply suits your needs.
 
-namespace Template
+namespace raytracer
 {
     public class OpenTKApp : GameWindow
     {
@@ -175,7 +175,11 @@ namespace Template
         {
             base.OnRenderFrame(e);
             // called once per frame; render
-            if (app != null) app.Tick();
+            if (app != null)
+            {
+                var keyboard = KeyboardState;
+                app.Tick(keyboard); 
+            }
             if (terminated)
             {
                 Close();

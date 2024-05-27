@@ -6,18 +6,18 @@ Team members: (names and student IDs)
 Tick the boxes below for the implemented features. Add a brief note only if necessary, e.g., if it's only partially working, or how to turn it on.
 
 Formalities:
-[ ] This readme.txt
+[X] This readme.txt
 [ ] Cleaned (no obj/bin folders)
 
 Minimum requirements implemented:
-[ ] Camera: position and orientation controls, field of view in degrees
+[X] Camera: position and orientation controls, field of view in degrees
 Controls: ...
-[ ] Primitives: plane, sphere
-[ ] Lights: at least 2 point lights, additive contribution, shadows without "acne"
-[ ] Diffuse shading: (N.L), distance attenuation
-[ ] Phong shading: (R.V) or (N.H), exponent
-[ ] Diffuse color texture: only required on the plane primitive, image or procedural, (u,v) texture coordinates
-[ ] Mirror reflection: recursive
+[X] Primitives: plane, sphere
+[X] Lights: at least 2 point lights, additive contribution, shadows without "acne"
+[X] Diffuse shading: (N.L), distance attenuation
+[X] Phong shading: (R.V) or (N.H), exponent
+[X] Diffuse color texture: only required on the plane primitive, image or procedural, (u,v) texture coordinates
+[X] Mirror reflection: recursive
 [ ] Debug visualization: sphere primitives, rays (primary, shadow, reflected, refracted)
 
 Bonus features implemented:
