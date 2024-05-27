@@ -269,6 +269,16 @@ namespace raytracer
                 }
             }
 
+            foreach (Triangle triangle in scene.triangleList)
+            {
+                Intersection currentIntersection = IntersectTriangle(rayOrigin, rayDirection, triangle);
+                if (currentIntersection != null && currentIntersection.distance <= length)
+                {
+                    finalIntersection = currentIntersection;
+                    length = finalIntersection.distance;
+                }
+            }
+
             //return the finalintersection, which is null if there was no intersection
             return finalIntersection;
         }
@@ -350,6 +360,31 @@ namespace raytracer
             return intersection;
         }
 
+        private Intersection IntersectTriangle(Vector3 rayOrigin, Vector3 rayDirection, Triangle triangle)
+        {
+            float d = Vector3.Dot(triangle.point1, triangle.normal);
+            float a = Vector3.Dot(rayOrigin, triangle.normal);
+            float b = Vector3.Dot(rayDirection, triangle.normal);
+
+            float length = (d - a) / b;
+
+            Intersection intersection = null;
+
+            if (length >0)
+            {
+                Vector3 point = rayOrigin + length * rayDirection;
+
+                if (Vector3.Dot(Vector3.Cross(triangle.point2 - triangle.point1, point - triangle.point1), triangle.normal) >= 0 &&
+                    Vector3.Dot(Vector3.Cross(triangle.point1 - triangle.point3, point - triangle.point3), triangle.normal) >= 0 &&
+                    Vector3.Dot(Vector3.Cross(triangle.point3 - triangle.point2, point - triangle.point2), triangle.normal) >= 0)
+                {
+                    intersection = MakeNewIntersection(length, rayOrigin, rayDirection, triangle);
+                }
+            }
+
+            return intersection;
+        }
+
         /// <summary>
         /// makes a new intersection object
         /// </summary>
@@ -370,6 +405,11 @@ namespace raytracer
                 Sphere sphere = (Sphere)primitive;
                 Vector3 normal = Vector3.Normalize(intersectionCoordinate - sphere.scenePosition); 
                 intersection = new Intersection(intersectionCoordinate, sphere, normal);
+            }
+            else if (primitive is Triangle)
+            {
+                Triangle triangle = (Triangle)primitive;
+                intersection = new Intersection(intersectionCoordinate, triangle, triangle.normal);
             }
             else
             {

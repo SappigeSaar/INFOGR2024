@@ -24,6 +24,9 @@ namespace raytracer
         /// </summary>
         public List<Plane> planeList = new List<Plane>();
 
+
+        public List<Triangle> triangleList = new List<Triangle>();
+
         public Scene()
         {
             
@@ -55,6 +58,12 @@ namespace raytracer
             Plane plane2 = new Plane((1, 1, 0), (-5, 0, 0), (0, 0.1f, 0.5f), Primitive.Material.diffuseGlossyCombo);
             plane2.contrastColor = (1, 1, 1);
             planeList.Add(plane2);
+
+            Triangle triangle1 = new Triangle((0, 0.5f, 5), (1.5f, 0.5f, 6), (0.5f, 5, 6), (1f, 1, 0), Primitive.Material.diffuse);
+            triangleList.Add(triangle1);
+
+            Triangle triangle2 = new Triangle((0, 0.5f, 5), (-3f, 0.5f, 6), (0.5f, 5, 6), (1f, 1, 0), Primitive.Material.diffuse);
+            triangleList.Add(triangle2);
 
         }
     }
